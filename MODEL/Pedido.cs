@@ -5,6 +5,11 @@ namespace MODEL;
 
 public partial class Pedido
 {
+    public Pedido()
+    {
+        ClienteNavigation = null!;
+        Status = "Aberto";
+    }
     public int Id { get; set; }
 
     public int Cliente { get; set; }
