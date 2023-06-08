@@ -53,7 +53,7 @@ body
 {
     display: flex;
     flex-direction: row;
-    height: calc(100vh - 41px);
+    height: max( calc(100vh - 41px), 100%);
 }
 
 .left-container
@@ -206,3 +206,14 @@ input[type=submit] {
     text-decoration: none;
     cursor: pointer;
 }
+
+.btn-danger {
+    background-color: white;
+    color: red;
+}
+.btn-list {
+    color:dodgerblue;
+    background-color: white;
+    margin-right:20px;
+}
+
