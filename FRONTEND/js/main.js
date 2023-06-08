@@ -5,6 +5,8 @@ var PORT = 5093;
 
 const API_URL = "http://127.0.0.1:"+PORT+"/api"
 
+
+
 // Funcao para fazer requisicoes GET
 app.get = function (url,
                     callback,
@@ -76,10 +78,56 @@ app.bindNavigation = function () {
 }
 
 
+app.bindClienteMenu = function () {
+    const cliente_novo = document.getElementById("cliente-novo");
+    const cliente_busca = document.getElementById("cliente-busca");
+
+    cliente_novo.addEventListener("click", function () {
+        cliente_novo.classList.add("active");
+        cliente_busca.classList.remove("active");
+    })
+
+    cliente_busca.addEventListener("click", function () {
+        cliente_novo.classList.remove("active");
+        cliente_busca.classList.add("active");
+    })
+    
+}
+
+app.populateClientesTable = function (data) {
+    
+        const clientes_table = document.getElementById("clientes-table");
+    
+        // limpar tabela
+        clientes_table.innerHTML = "";
+    
+        // criar cabecalho
+        const header = document.createElement("thead");
+        header.innerHTML = "<tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Endereço</th><th>Opções</th></tr>";
+        clientes_table.appendChild(header);
+    
+        // criar linhas
+        for (let i = 0; i < data.length; i++) {
+            const cliente = data[i];
+    
+            const row = document.createElement("tr");
+            row.innerHTML = "<td>"+cliente.nome+"</td><td>"+cliente.cpf+"</td><td>"+cliente.telefone+"</td><td>"+cliente.endereco+"</td><td><a href='#' class='btn btn-danger btn-sm'>Excluir</a></td>";
+            clientes_table.appendChild(row);
+        }
+
+        if(data.length == 0)
+        {
+            const row = document.createElement("tr");
+            row.innerHTML = "<td colspan='5'>Nenhum cliente cadastrado</td>";
+            clientes_table.appendChild(row);
+        }
+
+}
 
 // inicializar funcoes de binds, conexoes, etc
 app.init = function () {
     app.bindNavigation();
+    
 }
 
 
@@ -112,6 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const cliente_count = document.getElementById("cliente-count");
         cliente_count.innerHTML = data.length;
 
+        app.clientes = data;
     });
 
     // get pedidos
@@ -119,6 +168,17 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const pedido_count = document.getElementById("pedido-count");
             pedido_count.innerHTML = data.length;
+
+            app.pedidos = data;
     
         })
+
+
+    if( app.clientes == undefined )
+        app.clientes = [];
+
+    if(app.pedidos == undefined)
+        app.pedidos = [];
+    
+    app.populateClientesTable(app.clientes);
 })
