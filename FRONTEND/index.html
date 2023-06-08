@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Front Transportes</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <nav class="navigation">
+        <ul>
+            <li id="index-link" class="nav-button selected">
+                <span>Inicio</span>
+            </li>
+
+            <li id="clientes-link" class="nav-button">
+                <span>Clientes</span>
+            </li>
+
+            <li id="pedidos-link" class="nav-button">
+                Pedidos
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main">
+
+        <div class="left-container container">
+            
+            <div id="index-page" class="active">
+
+                <h1>Front Transportes</h1>
+                <div class="box">
+                   Status: <span id="status"> </span>
+                </div>
+                <div class="box"> introducao explicando como usar</div>
+                <div class="box"> 
+                    
+                <div style="display:flex;flex-direction: row;width:100%;justify-content: space-around;";>
+                    <div class="square">
+                        <div id="cliente-count">-</div>
+                        <span>clientes</span>
+                    </div>
+                    <div class="square">
+                        <div id="pedido-count">-</div>
+                    <span>pedidos</span></div>
+                </div>
+                
+            </div>
+        </div>
+
+        <div id="clientes-page" class="">
+            <h1>Clientes</h1>
+            <div class="test box">CRUD clientes</div>
+        </div>
+
+        <div id="pedidos-page" class="">
+            <h1>Pedidos</h1>
+            <div class="test box">CRUD pedidos </div>
+        </div>
+
+
+            
+        </div>
+
+        <div class="right-container container">
+            <h3>Inspetor</h3>
+            <span>selecione um objeto para analisa-lo</span>
+        </div>
+    </div>
+
+
+    <script src="js/main.js"></script>
+    
+</body>
+</html>

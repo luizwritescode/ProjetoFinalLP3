@@ -43,5 +43,15 @@ namespace BLL
 
 
         //delete
+
+
+        //função auxiliar, retorna se a conexão com o banco de dados está funcionando
+        public static bool TestConnection()
+        {
+            using(var db = new DatabaseMdf())
+            {
+                return db.Database.CanConnect();
+            }
+        }
     }
 }

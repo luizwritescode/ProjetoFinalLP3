@@ -16,6 +16,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//configure CORS
+app.UseCors( options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader() );
+
 app.UseAuthorization();
 
 app.MapControllers();
