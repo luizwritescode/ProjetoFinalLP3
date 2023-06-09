@@ -65,5 +65,55 @@ namespace API.Controllers
                 return StatusCode(500, ex.ToString());
             }
         }
+
+        [HttpPut(Name = "UpdateCliente")]
+        public ActionResult<Cliente> UpdateCliente(Cliente _cliente)
+        {
+            try
+            {
+                if (_cliente == null)
+                    return BadRequest("Cliente inválido.");
+
+                if (BLL.ClienteRepository.GetById(_cliente.Id) == null)
+                    return NotFound("Cliente não encontrado.");
+
+                Cliente cliente_atualizado = BLL.ClienteRepository.Update(_cliente);
+
+                return Ok(cliente_atualizado);
+
+            }
+            catch( Exception ex )
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
+
+        [HttpDelete("{id}", Name = "DeleteCliente")]
+        public ActionResult DeleteCliente(int id)
+        {
+            try
+            {
+                Cliente cliente = BLL.ClienteRepository.GetById(id);
+
+                if (cliente == null)
+                    return NotFound("Cliente não encontrado.");
+
+
+                // Deleta todos os pedidos do cliente (necessario pos ha uma FK de cliente em pedido)
+                List<Pedido> pedidos = BLL.PedidoRepository.GetByCliente(cliente);
+
+                foreach(Pedido pedido in pedidos)
+                    BLL.PedidoRepository.Delete(pedido);
+                
+                BLL.ClienteRepository.Delete(cliente);
+
+                return Ok("Cliente deletado com sucesso.");
+
+            }
+            catch( Exception ex )
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
     }
 }

@@ -152,7 +152,6 @@ app.bindForms = function () {
         const cliente_message = document.getElementById("cliente-message");
         cliente_message.innerHTML = "Carregando...";
 
-        debugger
         const cliente = {
             nome: document.getElementById("cliente-nome").value,
             email: document.getElementById("cliente-email").value,

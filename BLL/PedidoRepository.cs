@@ -20,7 +20,7 @@ namespace BLL
                 Pedido pedido = db.Pedidos.Find(id);
 
                 if (pedido == null)
-                    throw new Exception("Pedido não encontrado");
+                    return null;
 
                 pedido.ClienteNavigation = ClienteRepository.GetById(pedido.Cliente);
 
@@ -32,10 +32,10 @@ namespace BLL
         public static List<Pedido> GetByCliente(Cliente _cliente)
         {
             using (var db = new DatabaseMdf())
-            { 
+            {
 
                 if (_cliente == null)
-                    throw new Exception("Cliente não encontrado");
+                    return null;
 
                 List<Pedido> pedidos = db.Pedidos.Where(p => p.Cliente == _cliente.Id).ToList();
 
@@ -66,6 +66,12 @@ namespace BLL
             {
                 Pedido pedido = new Pedido();
 
+                //verificar se cliente existe
+                Cliente cliente = ClienteRepository.GetById(_pedido.Cliente);
+
+                if (cliente == null)
+                    throw new Exception("Cliente não encontrado");
+
                 pedido.Cliente = _pedido.Cliente;
                 pedido.MunicipioOrigem = _pedido.MunicipioOrigem;
                 pedido.MunicipioDestino = _pedido.MunicipioDestino;
@@ -83,10 +89,36 @@ namespace BLL
             }
         }
 
-        // public static void Update(Pedido _pedido)
+        public static Pedido Update(Pedido _pedido)
+        {
+            using(var db = new DatabaseMdf())
+            {
+                Pedido pedido = db.Pedidos.Single(p => p.Id == _pedido.Id);
+                pedido.Cliente = _pedido.Cliente;
+                pedido.MunicipioOrigem = _pedido.MunicipioOrigem;
+                pedido.MunicipioDestino = _pedido.MunicipioDestino;
+                pedido.QtdVans = _pedido.QtdVans;
+                pedido.QtdCarros = _pedido.QtdCarros;
+                pedido.Data = _pedido.Data;
+                pedido.Valor = ValorManager.CalcularValor(pedido);
+                pedido.Status = _pedido.Status;
+
+                db.SaveChanges();
+
+                return pedido;
+            }
+        }
 
 
-        // public static void Delete(Pedido _pedido)
+        public static void Delete(Pedido _pedido)
+        {
+            using(var db = new DatabaseMdf())
+            {
+                Pedido pedido = db.Pedidos.Single(p => p.Id == _pedido.Id);
+                db.Pedidos.Remove(pedido);
+                db.SaveChanges();
+            }
+        }
 
 
     }
