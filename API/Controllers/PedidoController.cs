@@ -79,9 +79,49 @@ namespace API.Controllers
                 if (_pedido == null)
                     return BadRequest("Pedido inválido.");
 
+        
+
                 Pedido pedido_adcionado = BLL.PedidoRepository.Add(_pedido);
 
                 return Ok(pedido_adcionado);
+            }
+            catch( Exception ex )
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
+
+        [HttpPut(Name = "UpdatePedido")]
+        public ActionResult<Pedido> UpdatePedido(Pedido _pedido)
+        {
+            try
+            {
+                if (_pedido == null)
+                    return BadRequest("Pedido inválido.");
+
+                Pedido pedido_atualizado = BLL.PedidoRepository.Update(_pedido);
+
+                return Ok(pedido_atualizado);
+            }
+            catch( Exception ex )
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
+
+        [HttpDelete("{id}", Name = "DeletePedido")]
+        public ActionResult DeletePedido(int id)
+        {
+            try
+            {
+                Pedido pedido = BLL.PedidoRepository.GetById(id);
+
+                if (pedido == null)
+                    return NotFound("Pedido não encontrado.");
+
+                BLL.PedidoRepository.Delete(pedido);
+
+                return Ok();
             }
             catch( Exception ex )
             {

@@ -5,7 +5,17 @@ var PORT = 5093;
 
 const API_URL = "http://127.0.0.1:"+PORT+"/api"
 
+app.state = {
+    screen: "index"
+}
 
+app.storeOnLocalStorage = function (key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+app.getFromLocalStorage = function (key) {
+    return JSON.parse(localStorage.getItem(key));
+}
 
 // Funcao para fazer requisicoes GET
 app.get = function (url,
@@ -33,6 +43,22 @@ app.get = function (url,
     request.send();
 }
 
+// Funcao para fazer requicisoes POST
+app.post = function (url, data, callback, error_callback = function (status) { }) {
+    debugger
+    var request = new XMLHttpRequest();
+    request.open("POST", url, true);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.onload = function () {
+        if (request.status >= 200 && request.status < 400) {
+            callback(JSON.parse(request.responseText), request.status);
+        } else {
+            console.log("Erro ao fazer a requisição POST");
+        }
+    }
+    request.onerror = error_callback
+    request.send(JSON.stringify(data));
+}
 
 
 // Funcao para bind o menu de navegacao
@@ -46,6 +72,34 @@ app.bindNavigation = function () {
     const clientes_page = document.getElementById("clientes-page");
     const pedidos_page = document.getElementById("pedidos-page");
 
+    app.getFromLocalStorage("screen") == null ? app.state.screen = "index" : app.state.screen = app.getFromLocalStorage("screen");
+
+    //inicializar aba correta do local storage
+    if(app.state.screen == "index")
+    {
+        index_link.classList.add("selected");
+        clientes_link.classList.remove("selected");
+        pedidos_link.classList.remove("selected");
+        index_page.classList.add("active");
+        clientes_page.classList.remove("active");
+        pedidos_page.classList.remove("active");
+    } else if( app.state.screen == "clientes") {
+        index_link.classList.remove("selected");
+        clientes_link.classList.add("selected");
+        pedidos_link.classList.remove("selected");
+        index_page.classList.remove("active");
+        clientes_page.classList.add("active");
+        pedidos_page.classList.remove("active");
+    } else if( app.state.screen == "pedidos") {
+        index_link.classList.remove("selected");
+        clientes_link.classList.remove("selected");
+        pedidos_link.classList.add("selected");
+        index_page.classList.remove("active");
+        clientes_page.classList.remove("active");
+        pedidos_page.classList.add("active");
+    }
+
+
     index_link.addEventListener("click", function () {
         index_page.classList.add("active");
         clientes_page.classList.remove("active");
@@ -54,6 +108,10 @@ app.bindNavigation = function () {
         index_link.classList.add("selected");
         clientes_link.classList.remove("selected");
         pedidos_link.classList.remove("selected");
+
+        app.state.screen = "index";
+
+        app.storeOnLocalStorage("screen", "index");
     })
 
     clientes_link.addEventListener("click", function () {
@@ -64,6 +122,9 @@ app.bindNavigation = function () {
         index_link.classList.remove("selected");
         clientes_link.classList.add("selected");
         pedidos_link.classList.remove("selected");
+
+        app.state.screen = "clientes";
+        app.storeOnLocalStorage("screen", "clientes")
     })
 
     pedidos_link.addEventListener("click", function () {
@@ -74,9 +135,42 @@ app.bindNavigation = function () {
         index_link.classList.remove("selected");
         clientes_link.classList.remove("selected");
         pedidos_link.classList.add("selected");
+
+        app.state.screen = "pedidos";
+
+        app.storeOnLocalStorage("screen", "pedidos")
     })
 }
 
+app.bindForms = function () {
+    const cliente_form = document.getElementById("cliente-form");
+    const pedido_form = document.getElementById("pedido-form");
+
+    cliente_form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const cliente_message = document.getElementById("cliente-message");
+        cliente_message.innerHTML = "Carregando...";
+
+        const cliente = {
+            nome: document.getElementById("cliente-nome").value,
+            email: document.getElementById("cliente-email").value,
+            telefone: document.getElementById("cliente-telefone").value
+        }
+
+        app.post(API_URL+"/Cliente", cliente, function (data, status) {
+            if (status == 200) {
+
+                //reload table
+                app.getClientes();
+
+            } else {
+                cliente_message.innerHTML = "Erro ao cadastrar cliente";
+            }
+        })
+    })
+}
+                
 
 app.bindClienteMenu = function () {
     const cliente_novo = document.getElementById("cliente-novo");
@@ -103,15 +197,19 @@ app.populateClientesTable = function (data) {
     
         // criar cabecalho
         const header = document.createElement("thead");
-        header.innerHTML = "<tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Endereço</th><th>Opções</th></tr>";
+        header.innerHTML = "<tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Opções</th></tr>";
         clientes_table.appendChild(header);
     
         // criar linhas
         for (let i = 0; i < data.length; i++) {
+
+            if(data[i].nome == null)
+                continue;
+
             const cliente = data[i];
     
             const row = document.createElement("tr");
-            row.innerHTML = "<td>"+cliente.nome+"</td><td>"+cliente.cpf+"</td><td>"+cliente.telefone+"</td><td>"+cliente.endereco+"</td><td><a href='#' class='btn btn-danger btn-sm'>Excluir</a></td>";
+            row.innerHTML = "<td>"+cliente.nome+"</td><td>"+cliente.email+"</td><td>"+cliente.telefone+"</td><td><a href='#' class='btn-success btn-list'>Editar</a><a href='#' class='btn-danger'>X</a></td>";
             clientes_table.appendChild(row);
         }
 
@@ -124,24 +222,39 @@ app.populateClientesTable = function (data) {
 
 }
 
-// inicializar funcoes de binds, conexoes, etc
-app.init = function () {
-    app.bindNavigation();
+app.getClientes = function () {
     
+    // get clientes
+    app.get(API_URL+"/Cliente", function (data, status) {
+
+        const cliente_count = document.getElementById("cliente-count");
+        cliente_count.innerHTML = data.length - 1 ;
+
+        app.clientes = data;
+
+        app.populateClientesTable(app.clientes);
+    });
 }
 
+app.getPedidos = function () {
+        // get pedidos
+        app.get(API_URL+"/Pedido", function (data, status) {
+            
+            const pedido_count = document.getElementById("pedido-count");
+            pedido_count.innerHTML = data.length - 1;
 
-// inicializar script quando o DOM estiver pronto
-document.addEventListener("DOMContentLoaded", function () {
-    app.init();
+            app.pedidos = data;
+    
+        })
+}
 
-    const status_label = document.getElementById("status");
-    status_label.innerHTML = "Conectando ao servidor...";
-
+app.getStatus = function () {
+    
     app.get(API_URL+"/Status", function (data, status) {
 
         if(status == 200)
         {
+            const status_label = document.getElementById("status");
             status_label.innerHTML = "Conectado ao servidor";
             status_label.style.color = "green";
         }
@@ -152,27 +265,29 @@ document.addEventListener("DOMContentLoaded", function () {
         status_label.style.color = "red";
     }
     );
+}
+
+// inicializar funcoes de binds, conexoes, etc
+app.init = function () {
+    app.bindNavigation();
+    app.bindForms();
+
+    app.bindClienteMenu();
+
+    const status_label = document.getElementById("status");
+    status_label.innerHTML = "Conectando ao servidor...";
+
+    app.getStatus();
+    app.getClientes();
+    app.getPedidos();
+
+}
 
 
-    // get clientes
-    app.get(API_URL+"/Cliente", function (data, status) {
-
-        const cliente_count = document.getElementById("cliente-count");
-        cliente_count.innerHTML = data.length;
-
-        app.clientes = data;
-    });
-
-    // get pedidos
-    app.get(API_URL+"/Pedido", function (data, status) {
-            
-            const pedido_count = document.getElementById("pedido-count");
-            pedido_count.innerHTML = data.length;
-
-            app.pedidos = data;
+// inicializar script quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", function () {
     
-        })
-
+    app.init();
 
     if( app.clientes == undefined )
         app.clientes = [];

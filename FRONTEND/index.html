@@ -62,29 +62,30 @@
                 
                 <div style="padding:15px;">
 
-                    <form method="post" onsubmit="postCliente">
+                    <form id="cliente-form" method="post">
 
                         <div class="flex-col">
 
                             <div class="input-div">
                                 <label for="nome">Nome:</label>
-                                <input type="text" name="nome" id="nome" required>
+                                <input type="text" name="nome" id="cliente-nome" required>
                             </div>
                             
                             <div class="input-div">
                                 
                                 <label for="email">Email:</label>
-                                <input type="email" name="email" id="email" required>
+                                <input type="email" name="email" id="cliente-email" required>
                         </div>
                         
                         <div class="input-div">
 
                             <label for="telefone">Telefone:</label>
-                            <input type="text" name="telefone" id="telefone" required>
+                            <input type="text" name="telefone" id="cliente-telefone" required>
                         </div>
                             
                         </div>
                     <div class="submit-div">
+                        <span style="display:flex; align-items: center; margin-right:10px;" id="cliente-message"></span>
                         <input type="submit" value="Salvar">
                     </div>
                 </form>

@@ -39,10 +39,32 @@ namespace BLL
             }
         }
 
-        //update
+        //update um cliente
+        public static Cliente Update(Cliente _cliente)
+        {
+            using (var db = new DatabaseMdf())
+            {
+                var cliente = db.Clientes.Single(p => p.Id == _cliente.Id);
+                cliente.Nome = _cliente.Nome;
+                cliente.Email = _cliente.Email;
+                cliente.Telefone = _cliente.Telefone;
+                db.SaveChanges();
+
+                return cliente;
+            }
+        }
 
 
-        //delete
+        //delete um cliente
+        public static void Delete(Cliente _cliente)
+        {
+            using (var db = new DatabaseMdf())
+            {
+                var cliente = db.Clientes.Single(p => p.Id == _cliente.Id);
+                db.Clientes.Remove(cliente);
+                db.SaveChanges();
+            }
+        }
 
 
         //função auxiliar, retorna se a conexão com o banco de dados está funcionando
