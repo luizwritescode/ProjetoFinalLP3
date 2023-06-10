@@ -33,6 +33,15 @@ namespace API.Controllers
         {
             try
             {
+
+
+                var q = Request.Query["q"];
+
+                if(q.Count > 0)
+                {
+                    // Busca cliente por nome usando a query
+                }
+
                 List<Cliente> clientes = BLL.ClienteRepository.GetAll();
 
                 if (clientes != null)
