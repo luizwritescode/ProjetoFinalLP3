@@ -1,4 +1,3 @@
-
 const app = {}
 
 var PORT = 5093;
@@ -45,7 +44,6 @@ app.get = function (url,
 
 // Funcao para fazer requicisoes POST
 app.post = function (url, data, callback, error_callback = function (status) { }) {
-    debugger
     var request = new XMLHttpRequest();
     request.open("POST", url, true);
     request.setRequestHeader("Content-Type", "application/json");
@@ -160,15 +158,48 @@ app.bindForms = function () {
 
         app.post(API_URL+"/Cliente", cliente, function (data, status) {
             if (status == 200) {
-
+                cliente_message.innerHTML = "Cliente cadastrado com sucesso";
                 //reload table
                 app.getClientes();
 
-            } else {
-                cliente_message.innerHTML = "Erro ao cadastrar cliente";
-            }
+            } 
+        }, function (status) {
+            console.log(status)
+            cliente_message.innerHTML = "Erro ao cadastrar cliente";
         })
     })
+
+    pedido_form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        debugger
+
+        const pedido_message = document.getElementById("pedido-message");
+        pedido_message.innerHTML = "Carregando...";
+
+        const pedido = {
+           cliente: document.getElementById("pedido-cliente").value,
+           municipioOrigem: document.getElementById("pedido-origem").value,
+            municipioDestino: document.getElementById("pedido-destino").value,
+            qtdCarros: document.getElementById("pedido-qtdcarros").value,
+            data: document.getElementById("pedido-data").value,
+            clienteNavigation: {}
+        }
+
+        app.post(API_URL+"/Pedido", pedido, function (data, status) {
+            if (status == 200) {
+
+                pedido_message.innerHTML = "Pedido cadastrado com sucesso";
+                //reload table
+                app.getPedidos();
+
+            } 
+        }, function (status) {
+            console.log(status)
+            pedido_message.innerHTML = "Erro ao cadastrar pedido";
+        })
+    })
+
 }
                 
 
@@ -222,17 +253,60 @@ app.populateClientesTable = function (data) {
 
 }
 
+
+app.populatePedidosTable = function (data) {
+    const pedidos_table = document.getElementById("pedidos-table");
+
+    // limpar tabela
+    pedidos_table.innerHTML = "";
+
+    // criar cabecalho
+    const header = document.createElement("thead");
+    header.innerHTML = "<tr><th>Cliente</th><th>Origem</th><th>Destino</th><th>Carros</th><th>Vans</th><th>Valor</th><th>Data</th><th>Status</th><th>Opções</th></tr>";
+    pedidos_table.appendChild(header);
+
+    // criar linhas
+    for (let i = 0; i < data.length; i++) {
+            
+            if(data[i].cliente == null)
+                continue;
+        
+            const pedido = data[i];
+
+            const valor = Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pedido.valor);
+
+            const data_simples = pedido.data.split("T")[0];
+
+            
+            //BUG!! As vezes o pedido.clienteNavigation vem undefined, quando ja deveria ter sido carregado na funcao getPedidos
+            const nome_cliente = pedido.clienteNavigation == undefined ? app.clientes.find(x => x.id == app.pedidos[i].cliente) : pedido.clienteNavigation.nome;
+
+            const row = document.createElement("tr");
+            row.innerHTML = "<td>"+nome_cliente+"</td><td>"+pedido.municipioOrigem+"</td><td>"+pedido.municipioDestino+"</td><td>"+pedido.qtdCarros+"</td><td>"+pedido.qtdVans+"</td><td>"+valor+"</td><td>"+data_simples+"</td><td>"+pedido.status+"</td><td><a href='#' class='btn-success btn-list'>Editar</a><a href='#' class='btn-danger'>X</a></td>";
+            pedidos_table.appendChild(row);
+        }
+
+        if(data.length == 0)
+        {
+            const row = document.createElement("tr");
+            row.innerHTML = "<td colspan='9'>Nenhum pedido cadastrado</td>";
+            pedidos_table.appendChild(row);
+        }
+
+}
+
 app.getClientes = function () {
     
     // get clientes
     app.get(API_URL+"/Cliente", function (data, status) {
 
         const cliente_count = document.getElementById("cliente-count");
-        cliente_count.innerHTML = data.length - 1 ;
+        cliente_count.innerHTML = data.length;
 
         app.clientes = data;
 
         app.populateClientesTable(app.clientes);
+        app.populateClienteSelect(app.clientes);
     });
 }
 
@@ -241,20 +315,28 @@ app.getPedidos = function () {
         app.get(API_URL+"/Pedido", function (data, status) {
             
             const pedido_count = document.getElementById("pedido-count");
-            pedido_count.innerHTML = data.length - 1;
+            pedido_count.innerHTML = data.length;
 
             app.pedidos = data;
+
+            for(let i = 0; i < app.pedidos.length; i++)
+            {
+                app.pedidos[i].clienteNavigation = app.clientes.find(x => x.id == app.pedidos[i].cliente);
+            }
+
+            app.populatePedidosTable(app.pedidos);
     
         })
 }
 
 app.getStatus = function () {
+    const status_label = document.getElementById("status");
+    status_label.innerHTML = "Conectando ao servidor...";
     
     app.get(API_URL+"/Status", function (data, status) {
-
+        
         if(status == 200)
         {
-            const status_label = document.getElementById("status");
             status_label.innerHTML = "Conectado ao servidor";
             status_label.style.color = "green";
         }
@@ -267,6 +349,60 @@ app.getStatus = function () {
     );
 }
 
+app.getMunicipios = function () {
+    app.get(API_URL+"/Distancias/Municipios", function (data, status) {
+
+        app.municipios = data;
+
+        app.populateMunicipioSelect(app.municipios);
+
+    });
+}
+
+// funcao para popular o menu para adcionar um novo pedido
+app.populateClienteSelect = function (data) {
+    const cliente_select = document.getElementById("pedido-cliente");
+
+    // limpar select
+    cliente_select.innerHTML = "<option value='' disabled selected>Selecione um cliente</option>";
+
+    // criar linhas
+    for (let i = 0; i < data.length; i++) {
+        const cliente = data[i];
+
+        const option = document.createElement("option");
+        option.value = cliente.id;
+        option.innerHTML = cliente.nome;
+        cliente_select.appendChild(option);
+    }
+}
+
+app.populateMunicipioSelect = function (data) {
+    const origem_select = document.getElementById("pedido-origem")
+    const destino_select = document.getElementById("pedido-destino")
+
+    // limpar selects
+    origem_select.innerHTML = "<option value='' disabled selected>Selecione um municipio</option>";
+    destino_select.innerHTML = "<option value='' disabled selected>Selecione um municipio</option>";
+
+    // criar linhas
+    for (let i = 0; i < data.length; i++) {
+        const municipio = data[i];
+
+        const option = document.createElement("option");
+        option.value = municipio
+        option.innerHTML = municipio
+        origem_select.appendChild(option);
+        destino_select.appendChild(option.cloneNode(true));
+
+    }
+
+}
+
+
+
+
+
 // inicializar funcoes de binds, conexoes, etc
 app.init = function () {
     app.bindNavigation();
@@ -274,13 +410,12 @@ app.init = function () {
 
     app.bindClienteMenu();
 
-    const status_label = document.getElementById("status");
-    status_label.innerHTML = "Conectando ao servidor...";
+    
 
     app.getStatus();
     app.getClientes();
     app.getPedidos();
-
+    app.getMunicipios();
 }
 
 
@@ -296,4 +431,5 @@ document.addEventListener("DOMContentLoaded", function () {
         app.pedidos = [];
     
     app.populateClientesTable(app.clientes);
+    app.populatePedidosTable(app.pedidos);
 })

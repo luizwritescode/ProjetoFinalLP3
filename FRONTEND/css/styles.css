@@ -193,6 +193,12 @@ form > div > div>  input:focus {
     outline: none;
 }
 
+form > div > div > select {
+    display: flex;
+    padding: 5px;
+    border: 1px solid #333;
+    border-radius: 5px;
+}
 .submit-div {
     display: flex;
     justify-content: flex-end;

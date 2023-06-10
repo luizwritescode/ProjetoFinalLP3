@@ -36,7 +36,14 @@
                 <div class="box">
                    Status: <span id="status"> </span>
                 </div>
-                <div class="box"> introducao explicando como usar</div>
+                <div class="box"> 
+                    
+                    <p>
+                        Front Transportes é um sistema de gerenciamento de pedidos e clientes. </p>
+                        A conexão está configurada para porta padrão do swagger 5093.
+                        Se a API estiver em outra porta é necessário alterar o arquivo <b>js/main.js</b> na linha 2.
+                    </p>
+                    </div>
                 <div class="box"> 
                     
                 <div style="display:flex;flex-direction: row;width:100%;justify-content: space-around;";>
@@ -94,7 +101,10 @@
             </div>
 
             
-            <table id="clientes-table">  </table>
+            <table id="clientes-table">
+        
+              
+            </table>
             
         </div>
 
@@ -102,35 +112,59 @@
             <h1>Pedidos</h1>
             <div class="box">
                 <div class="box-options">
-                    <span id="cliente-novo" class="active">Novo</span>
-                    <span id="cliente-busca">Busca</span>
+                    <span id="pedido-novo" class="active">Novo</span>
+                    <span id="pedido-busca">Busca</span>
                 </div>
                 
                 <div style="padding:15px;">
 
-                    <form method="post" onsubmit="postCliente">
+                    <form id="pedido-form" method="post">
 
                         <div class="flex-col">
 
+
+                            <!-- INPUTS NOVO PEDIDO -->
                             <div class="input-div">
-                                <label for="nome">Nome:</label>
-                                <input type="text" name="nome" id="nome" required>
+                                <label for="pedido-cliente">Cliente:</label>
+                                <select id="pedido-cliente" required>
+                                    <option value="" disabled selected>Selecione um cliente</option>
+                                </select>
+                            </div>
+                            <div class="input-div">
+
+                                <label for="pedido-origem">Municipio Origem:</label>
+                                <select id="pedido-origem" required>
+                                    <option value="" disabled selected>Selecione um municipio</option>
+                                </select>
+                            </div>
+
+                            <div class="input-div">
+
+                                <label for="pedido-destino">Municipio Destino:</label>
+                                <select id="pedido-destino" required>
+                                    <option value="" disabled selected>Selecione um municipio</option>
+                                </select>
+                            </div>
+
+                            <div class="input-div">
+                                <label for="qtdcarros">Quantidade de carros:</label>
+                                <input value="0" type="number" name="qtdcarros" id="pedido-qtdcarros" required>
+                            </div>
+                           
+                            <div class="input-div">
+                                <label for="qtdvans">Quantidade de vans:</label>
+                                <input value="0" type="number" name="qtdvans" id="pedido-qtdvans" required>
+                            </div>
+
+                            <div class="input-div">
+                                <label for="data">Data:</label>
+                                <input type="date" name="data" id="pedido-data" required>
                             </div>
                             
-                            <div class="input-div">
-                                
-                                <label for="email">Email:</label>
-                                <input type="email" name="email" id="email" required>
-                        </div>
-                        
-                        <div class="input-div">
-
-                            <label for="telefone">Telefone:</label>
-                            <input type="text" name="telefone" id="telefone" required>
-                        </div>
                             
                         </div>
                     <div class="submit-div">
+                        <span style="display:flex; align-items: center; margin-right:10px;" id="pedido-message"></span>
                         <input type="submit" value="Salvar">
                     </div>
                 </form>
@@ -138,7 +172,12 @@
             
             </div>
 
-            </div>
+            
+                <table id="pedidos-table">
+        
+              
+                </table>
+            
         </div>
 
 
