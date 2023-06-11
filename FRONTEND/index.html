@@ -40,9 +40,12 @@
                     
                     <p>
                         Front Transportes é um sistema de gerenciamento de pedidos e clientes. </p>
+                    <p>
                         A conexão está configurada para porta padrão do swagger 5093.
                         Se a API estiver em outra porta é necessário alterar o arquivo <b>js/main.js</b> na linha 2.
                     </p>
+
+                    <p>Bug: Mesmo estando em ordem sincrona a call de pedidos as vezes é feita antes da de clientes completar, causando nenhum pedido a ser mostrado. Dar refresh na pagina para recarregar os pedidos.</p>
                     </div>
                 <div class="box"> 
                     
@@ -185,8 +188,12 @@
         </div>
 
         <div class="right-container container">
-            <h3>Inspetor</h3>
-            <span>selecione um objeto para analisa-lo</span>
+
+            <div id="inspetor">
+
+                <h3>Inspetor</h3>
+                <span>selecione um objeto para analisa-lo</span>
+            </div>
         </div>
     </div>
 

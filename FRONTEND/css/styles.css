@@ -74,6 +74,10 @@ body
     width:20%;
     background-color: #eee;
     border-left: 1px solid #ccc;
+    position:sticky;
+    right:0px;
+    top:0px;
+    height: calc(100vh - 41px);
 }
 .container
 {
@@ -138,6 +142,7 @@ body
 table {
     border-collapse: collapse;
     width: 100%;
+    margin-bottom: 15px;
 }
 
 table, th, td {
@@ -224,3 +229,13 @@ input[type=submit] {
     margin-right:20px;
 }
 
+#inspetor > form > div {
+    display: flex;
+    flex-direction: column;
+    margin: 15px;
+}
+
+#inspetor > form > .submit-div {
+    display: flex;
+    align-items: flex-end;
+}
