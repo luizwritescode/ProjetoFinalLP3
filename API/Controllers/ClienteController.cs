@@ -116,7 +116,8 @@ namespace API.Controllers
                 
                 BLL.ClienteRepository.Delete(cliente);
 
-                return Ok("Cliente deletado com sucesso.");
+                // Retorna mensagem de sucesso em json
+                return Ok(new { message = "Cliente deletado com sucesso." });
 
             }
             catch( Exception ex )

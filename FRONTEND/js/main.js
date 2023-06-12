@@ -91,7 +91,7 @@ app.delete = async function (
   request.open("DELETE", url, true);
   request.onload = function () {
     if (request.status >= 200 && request.status < 400) {
-      callback(JSON.parse(request.responseText), request.status);
+      callback({}, request.status);
     } else {
       console.log("Erro ao fazer a requisição DELETE");
     }
@@ -207,10 +207,13 @@ app.bindForms = function () {
           //reload table
           app.getClientes();
         }
+
+        setTimeout(function () { cliente_message.innerHTML = ""; } , 5000);
       },
       function (status) {
-        console.log(status);
         cliente_message.innerHTML = "Erro ao cadastrar cliente";
+
+        setTimeout(function () { cliente_message.innerHTML = ""; } , 5000);
       }
     );
   });
@@ -236,13 +239,16 @@ app.bindForms = function () {
       function (data, status) {
         if (status == 200) {
           pedido_message.innerHTML = "Pedido cadastrado com sucesso";
-          //reload table
           app.getPedidos();
         }
+
+        setTimeout(function () { pedido_message.innerHTML = ""; } , 5000);
       },
       function (status) {
         console.log(status);
         pedido_message.innerHTML = "Erro ao cadastrar pedido";
+
+        setTimeout(function () { pedido_message.innerHTML = ""; } , 5000);
       }
     );
   });
@@ -291,7 +297,31 @@ app.populateClientesTable = function (data) {
       cliente.email +
       "</td><td>" +
       cliente.telefone +
-      "</td><td><a href='#' class='btn-success btn-list'>Editar</a><a href='#' class='btn-danger'>X</a></td>";
+      "</td>";
+
+    var td = document.createElement("td");
+      var edit_button = document.createElement("a");
+      edit_button.classList.add("btn-success");
+      edit_button.classList.add("btn-list");
+      edit_button.innerHTML = "Editar";
+      edit_button.href = "#";
+      edit_button.addEventListener("click", function () {
+        app.editCliente(cliente.id)
+      });
+
+      var delete_button = document.createElement("a");
+      delete_button.classList.add("btn-danger");
+      delete_button.innerHTML = "Deletar";
+      delete_button.href = "#";
+      delete_button.addEventListener("click", function () {
+        app.deleteCliente(cliente.id)
+      });
+
+      td.appendChild(edit_button);
+      td.appendChild(delete_button);
+
+      row.appendChild(td);
+
     clientes_table.appendChild(row);
   }
 
@@ -373,13 +403,13 @@ app.populatePedidosTable = function (data) {
   edit_button.href = "#"
   edit_button.addEventListener("click", function () {
     const id = app.pedidos[i].id;
-    app.showPedido(id);
+    app.editPedido(id);
   });
 
   let delete_button = document.createElement("a")
   delete_button.classList.add("pedido-delete")
   delete_button.classList.add("btn-danger")
-  delete_button.innerHTML = "X"
+  delete_button.innerHTML = "Deletar"
   delete_button.href = "#"
   delete_button.addEventListener("click", function () {
     const id = app.pedidos[i].id;
@@ -521,7 +551,7 @@ app.populateMunicipioSelect = function (data, select, selected="") {
 };
 
 //mostrar pedido na aba do inspetor
-app.showPedido = function (id) {
+app.editPedido = function (id) {
   const inspetor = document.getElementById("inspetor");
 
   const form = document.createElement("form");
@@ -665,6 +695,195 @@ app.showPedido = function (id) {
   inspetor.appendChild(form);
    
 };
+
+//abre o form para deletar um pedido
+app.deletePedido = function (id) {
+  const inspetor = document.getElementById("inspetor");
+
+  const form = document.createElement("form");
+
+  // limpar inspetor
+  inspetor.innerHTML = "";
+
+  const pedido = app.pedidos.find((x) => x.id == id);
+
+  const title = document.createElement("h3");
+  title.innerHTML = id + " : Pedido";
+
+  const text = document.createElement("p");
+  text.innerHTML = "Tem certeza que deseja deletar o pedido do cliente " + pedido.clienteNavigation.nome + "?";
+
+  const submit_div = document.createElement("div");
+  submit_div.classList.add("submit-div");
+
+  const submit_button = document.createElement("input");
+  submit_button.type = "submit";
+  submit_button.value = "Deletar";
+
+
+  let pedido_delete_message = document.createElement("span");
+  pedido_delete_message.id = "pedido-delete-message";
+  submit_div.appendChild(pedido_delete_message);
+  submit_div.appendChild(submit_button);
+
+  form.appendChild(title);
+  form.appendChild(text);
+  form.appendChild(submit_div);
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    app.delete(API_URL + "/Pedido/" + id, function (data, status) {
+      if (status == 200) {
+        pedido_delete_message.innerHTML = "Pedido deletado com sucesso!";
+        app.getPedidos();
+      } else {
+        pedido_delete_message.innerHTML = "Erro ao deletar pedido!";
+      }
+
+      setTimeout(function () { pedido_delete_message.innerHTML = ""; }, 5000)
+    })
+  })
+
+  inspetor.appendChild(form);
+
+};
+
+//abre o form para editar um cliente
+app.editCliente = function (id) {
+  const inspetor = document.getElementById("inspetor");
+
+  const form = document.createElement("form");
+  form.id = "cliente-edit-form";
+
+  // limpar inspetor
+  inspetor.innerHTML = "";
+
+  const cliente = app.clientes.find((x) => x.id == id);
+
+  const fields = ["Nome","Email", "Telefone"];
+
+  const title = document.createElement("h3");
+  title.innerHTML = id + " : Cliente";
+  inspetor.appendChild(title)
+
+  for(var i = 0; i < fields.length; i++){
+    var field = fields[i];
+
+    var input_div = document.createElement("div");
+    input_div.classList.add("input-div");
+
+    var label = document.createElement("label");
+    label.innerHTML = field + ": ";
+
+    var input = document.createElement("input");
+    input.id = "cliente-" + field.toLowerCase() + "-edit";
+    input.type = "text"
+    input.value = cliente[field.toLowerCase()]
+
+    input_div.appendChild(label);
+    input_div.appendChild(input);
+
+    form.appendChild(input_div);
+
+  }
+
+  const submit_button = document.createElement("input");
+  submit_button.type = "submit";
+  submit_button.value = "Salvar";
+
+
+  let submit_div = document.createElement("div");
+  submit_div.classList.add("submit-div");
+
+
+  let cliente_edit_message = document.createElement("span");
+  cliente_edit_message.id = "cliente-edit-message";
+  submit_div.appendChild(cliente_edit_message);
+  submit_div.appendChild(submit_button);
+
+  form.appendChild(submit_div);
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const data = {
+      id: id,
+      nome: document.getElementById("cliente-nome-edit").value,
+      email: document.getElementById("cliente-email-edit").value,
+      telefone: document.getElementById("cliente-telefone-edit").value,
+    };
+
+    app.put(API_URL + "/Cliente", data, function (data, status) {
+      if (status == 200) {
+        cliente_edit_message.innerHTML = "Cliente editado com sucesso!";
+        app.getClientes();
+      } else {
+        cliente_edit_message.innerHTML = "Erro ao editar cliente!";
+      }
+    });
+
+  })
+
+  inspetor.appendChild(form);
+};
+
+//abre o form para deletar um cliente
+app.deleteCliente = function (id) {
+  const inspetor = document.getElementById("inspetor");
+
+  const form = document.createElement("form");
+
+  // limpar inspetor
+  inspetor.innerHTML = "";
+
+  const cliente = app.clientes.find((x) => x.id == id);
+
+  const title = document.createElement("h3");
+  title.innerHTML = id + " : Cliente";
+  inspetor.appendChild(title)
+
+  const text = document.createElement("p");
+  text.innerHTML = "Tem certeza que deseja deletar o cliente \"" + cliente.nome + "\"?";
+
+  form.appendChild(text);
+
+  const submit_div = document.createElement("div");
+  submit_div.classList.add("submit-div");
+
+  const submit_button = document.createElement("input");
+  submit_button.type = "submit";
+  submit_button.value = "Deletar";
+
+  const cliente_delete_message = document.createElement("span");
+  cliente_delete_message.id = "cliente-delete-message";
+
+  submit_div.appendChild(cliente_delete_message);
+  submit_div.appendChild(submit_button);
+
+  form.appendChild(submit_div);
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    app.delete(API_URL + "/Cliente/" + id, function (data, status) {
+      if (status == 200) {
+        cliente_delete_message.innerHTML = "Cliente deletado com sucesso!";
+        app.getClientes();
+      } else {
+        cliente_delete_message.innerHTML = "Erro ao deletar cliente!";
+      }
+
+      setTimeout(function () {
+        cliente_delete_message.innerHTML = "";
+      }, 5000);
+    });
+
+  })
+
+  inspetor.appendChild(form);
+};
+
 
 // inicializar funcoes de binds, conexoes, etc
 app.init = async function () {
